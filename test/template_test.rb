@@ -38,6 +38,12 @@ class TemplateTest < Minitest::Test
     assert_empty leaks, "WareSpace references remain in: #{leaks.join(', ')}"
   end
 
+  def test_template_keeps_the_default_rails_schema_format
+    template = ROOT.join("template.rb").read
+
+    refute_includes template, "schema_format"
+  end
+
   def test_every_gem_has_a_bounded_version
     gemfile = ROOT.join("files/Gemfile.tt").read
     unbounded = gemfile.lines.grep(/^\s*gem /).reject { |line| line.match?(/gem \"[^\"]+\", \"(?:~>|<|<=|=)/) }

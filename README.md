@@ -26,7 +26,7 @@ one command that tells a developer or coding agent whether a change is ready.
 
 ### Rails foundation
 
-- PostgreSQL with `structure.sql`
+- PostgreSQL with Rails' default `schema.rb`
 - Tailwind CSS, importmap, Turbo, and Stimulus
 - Solid Queue, Solid Cache, and Solid Cable
 - ViewComponent

@@ -56,8 +56,6 @@ gsub_file "config/application.rb", "config.autoload_lib(ignore: %w[assets tasks]
   "config.autoload_lib(ignore: %w[assets rubocop tasks])"
 
 application <<~RUBY
-  config.active_record.schema_format = :sql
-
   config.generators do |generators|
     generators.test_framework :rspec
     generators.fixture_replacement :factory_bot, dir: "spec/factories"
