@@ -1,0 +1,110 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+require "open3"
+require "rbconfig"
+require "tmpdir"
+
+MAX_ADVISORY_STATEMENTS = 9
+NULL_REVISION = /\A(?:0{40}|0{64})\z/
+
+def blocking_smell?(smell)
+  return true if smell.fetch("type") == "HighComplexity"
+  return false unless smell.fetch("type") == "TooManyStatements"
+
+  smell.fetch("message")[/\d+/].to_i > MAX_ADVISORY_STATEMENTS
+end
+
+def blocking_findings(report_path)
+  report = JSON.parse(File.read(report_path))
+
+  report.fetch("analysed_modules", []).flat_map do |analysed_module|
+    analysed_module.fetch("smells", []).filter_map do |smell|
+      next unless blocking_smell?(smell)
+
+      location = smell.fetch("locations").first
+      format(
+        "%<path>s:%<line>s %<context>s %<type>s: %<message>s",
+        path: location.fetch("path"),
+        line: location.fetch("line"),
+        context: smell.fetch("context"),
+        type: smell.fetch("type"),
+        message: smell.fetch("message")
+      )
+    end
+  end
+end
+
+def changed_ruby_files(base_revision)
+  if base_revision.match?(NULL_REVISION)
+    base_revision, empty_tree_error, empty_tree_status = Open3.capture3(
+      "git", "hash-object", "-t", "tree", "--stdin", stdin_data: ""
+    )
+    abort(empty_tree_error) unless empty_tree_status.success?
+
+    base_revision = base_revision.strip
+  end
+
+  diff, diff_error, diff_status = Open3.capture3(
+    "git", "diff", "--name-only", "--diff-filter=ACMR", base_revision, "--", "app", "lib"
+  )
+  abort(diff_error) unless diff_status.success?
+
+  untracked, untracked_error, untracked_status = Open3.capture3(
+    "git", "ls-files", "--others", "--exclude-standard", "--", "app", "lib"
+  )
+  abort(untracked_error) unless untracked_status.success?
+
+  (diff.lines + untracked.lines)
+    .map(&:strip)
+    .uniq
+    .select { |path| path.end_with?(".rb") && File.file?(path) }
+end
+
+def generate_report(paths, report_directory)
+  command = [
+    RbConfig.ruby,
+    File.expand_path("rubycritic", __dir__),
+    "--format", "json",
+    "--path", report_directory,
+    "--minimum-score", "0",
+    *paths
+  ]
+  stdout, stderr, status = Open3.capture3(*command)
+  return if status.success?
+
+  warn stdout
+  abort(stderr)
+end
+
+if ARGV.first == "--check-report"
+  findings = blocking_findings(ARGV.fetch(1))
+  puts findings
+  exit(findings.empty? ? 0 : 1)
+end
+
+base_revision = ARGV.fetch(0) do
+  warn "Usage: bin/rubycritic-changed BASE_REVISION"
+  exit 2
+end
+paths = changed_ruby_files(base_revision)
+
+if paths.empty?
+  puts "No changed Ruby files under app/ or lib/."
+  exit 0
+end
+
+Dir.mktmpdir("rubycritic-changed") do |report_directory|
+  generate_report(paths, report_directory)
+  findings = blocking_findings(File.join(report_directory, "report.json"))
+
+  if findings.empty?
+    puts "RubyCritic changed-code gate passed for #{paths.length} file(s)."
+    exit 0
+  end
+
+  puts findings
+  warn "Resolve each blocking finding before merging."
+  exit 1
+end

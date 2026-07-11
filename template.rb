@@ -40,12 +40,15 @@ copy_template_file ".agents/skills/conventional-commits/references/commit-exampl
 copy_template_file ".agents/skills/tdd-workflow/SKILL.md"
 copy_template_file ".agents/skills/team-code-review/SKILL.md"
 copy_template_file ".github/workflows/ci.yml"
+copy_template_file "AGENTS.md"
 copy_template_file "bin/dependency-policy"
 copy_template_file "bin/rubycritic"
+copy_template_file "bin/rubycritic-changed"
 copy_template_file "bin/tapioca"
 copy_template_file "config/bundler-audit.yml"
 copy_template_file "config/ci.rb"
 copy_template_file "config/initializers/strong_migrations.rb"
+copy_template_file "docs/guides/testing.md"
 copy_template_file "lib/rubocop/cop/quality/no_inline_class.rb"
 copy_template_file "lib/rubocop/cop/quality/prefer_bareword_readers.rb"
 copy_template_file "lib/rubocop/cop/quality/time_for_a_boolean.rb"
@@ -53,8 +56,10 @@ copy_template_file "sorbet/config"
 copy_template_file "sorbet/tapioca/config.yml"
 copy_template_file "sorbet/tapioca/require.rb"
 copy_template_file "sorbet/rbi/shims/ci.rbi"
+copy_template_file "sorbet/rbi/shims/bundler_connection_pool.rbi"
 copy_template_file "spec/config/sorbet_strictness_spec.rb"
 copy_template_file "spec/config/testing_stack_spec.rb"
+copy_template_file "spec/bin/rubycritic_changed_spec.rb"
 copy_template_file "spec/rubocop/cop/quality/no_inline_class_spec.rb"
 copy_template_file "spec/rubocop/cop/quality/prefer_bareword_readers_spec.rb"
 copy_template_file "spec/rubocop/cop/quality/time_for_a_boolean_spec.rb"
@@ -103,7 +108,7 @@ inject_into_class "app/jobs/application_job.rb", "ApplicationJob", <<~RUBY
 RUBY
 
 after_bundle do
-  run "bin/rails generate rspec:install"
+  run "bin/rails generate rspec:install --force"
   copy_template_file ".rspec"
   copy_template_file "spec/spec_helper.rb"
   copy_template_file "spec/rails_helper.rb"
@@ -129,6 +134,7 @@ after_bundle do
 
   chmod "bin/dependency-policy", 0o755
   chmod "bin/rubycritic", 0o755
+  chmod "bin/rubycritic-changed", 0o755
   chmod "bin/tapioca", 0o755
 
   say "Rails quality stack installed. Run bin/ci to verify the application.", :green

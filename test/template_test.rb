@@ -4,6 +4,8 @@ require "minitest/autorun"
 require "json"
 require "open3"
 require "pathname"
+require "tempfile"
+require "tmpdir"
 require "yaml"
 
 class TemplateTest < Minitest::Test
@@ -95,5 +97,129 @@ class TemplateTest < Minitest::Test
     ].each do |term|
       assert_includes review_skill, term
     end
+  end
+
+  def test_changed_code_gate_blocks_high_complexity_with_an_actionable_location
+    success, output = check_rubycritic_report(
+      report_for(type: "HighComplexity", message: "has a flog score of 30", line: 12)
+    )
+
+    refute success
+    assert_equal "app/services/example.rb:12 Example#work HighComplexity: has a flog score of 30\n", output
+  end
+
+  def test_changed_code_gate_blocks_genuinely_large_methods
+    success, output = check_rubycritic_report(
+      report_for(type: "TooManyStatements", message: "has approx 15 statements")
+    )
+
+    refute success
+    assert_equal "app/services/example.rb:20 Example#work TooManyStatements: has approx 15 statements\n", output
+  end
+
+  def test_changed_code_gate_allows_short_advisory_statement_findings
+    success, output = check_rubycritic_report(
+      report_for(type: "TooManyStatements", message: "has approx 8 statements")
+    )
+
+    assert success
+    assert_empty output
+  end
+
+  def test_changed_code_gate_allows_non_blocking_smells
+    success, output = check_rubycritic_report(
+      report_for(type: "IrresponsibleModule", message: "has no descriptive comment")
+    )
+
+    assert success
+    assert_empty output
+  end
+
+  def test_changed_code_gate_treats_a_null_base_as_the_empty_tree
+    Dir.mktmpdir("rubycritic-null-base") do |repo|
+      _stdout, stderr, status = Open3.capture3("git", "init", "--quiet", chdir: repo)
+      assert status.success?, stderr
+
+      stdout, stderr, status = Open3.capture3(
+        ROOT.join("files/bin/rubycritic-changed").to_s, "0" * 40, chdir: repo
+      )
+      assert status.success?, stderr
+      assert_equal "No changed Ruby files under app/ or lib/.\n", stdout
+    end
+  end
+
+  def test_template_delivers_changed_code_quality_assets
+    template = ROOT.join("template.rb").read
+
+    %w[AGENTS.md bin/rubycritic-changed docs/guides/testing.md spec/bin/rubycritic_changed_spec.rb].each do |path|
+      assert_includes template, %(copy_template_file "#{path}")
+      assert ROOT.join("files", path).file?, "Missing template asset: #{path}"
+    end
+  end
+
+  def test_rspec_install_is_non_interactive
+    assert_includes ROOT.join("template.rb").read, 'run "bin/rails generate rspec:install --force"'
+  end
+
+  def test_template_delivers_bundler_connection_pool_sorbet_shim
+    template = ROOT.join("template.rb").read
+
+    assert_includes template, 'copy_template_file "sorbet/rbi/shims/bundler_connection_pool.rbi"'
+    assert ROOT.join("files/sorbet/rbi/shims/bundler_connection_pool.rbi").file?
+  end
+
+  def test_generated_ci_fetches_history_and_runs_changed_code_gate
+    workflow = ROOT.join("files/.github/workflows/ci.yml").read
+
+    assert_includes workflow, "fetch-depth: 0"
+    assert_includes workflow, "RUBYCRITIC_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}"
+    assert_includes workflow, 'bin/rubycritic-changed "$RUBYCRITIC_BASE"'
+  end
+
+  def test_generated_local_ci_runs_both_rubycritic_checks
+    ci_config = ROOT.join("files/config/ci.rb").read
+
+    assert_includes ci_config, 'step "Quality: RubyCritic", "bin/rubycritic"'
+    assert_includes ci_config, 'step "Quality: Changed RubyCritic"'
+    assert_includes ci_config, "bin/rubycritic-changed"
+  end
+
+  def test_integration_lane_runs_generated_quality_and_security_checks
+    test_runner = ROOT.join("bin/test").read
+
+    %w[bin/rubycritic bin/rubycritic-changed bin/brakeman bin/bundler-audit].each do |command|
+      assert_includes test_runner, command
+    end
+    assert_includes test_runner, "bin/importmap audit"
+  end
+
+  private
+
+  def check_rubycritic_report(report)
+    Tempfile.create(["rubycritic-report", ".json"]) do |file|
+      file.write(JSON.generate(report))
+      file.flush
+      stdout, _stderr, status = Open3.capture3(
+        ROOT.join("files/bin/rubycritic-changed").to_s, "--check-report", file.path
+      )
+      return [status.success?, stdout]
+    end
+  end
+
+  def report_for(type:, message:, line: 20)
+    {
+      "analysed_modules" => [
+        {
+          "smells" => [
+            {
+              "type" => type,
+              "context" => "Example#work",
+              "message" => message,
+              "locations" => [{"path" => "app/services/example.rb", "line" => line}]
+            }
+          ]
+        }
+      ]
+    }
   end
 end

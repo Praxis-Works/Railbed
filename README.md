@@ -49,7 +49,8 @@ one command that tells a developer or coding agent whether a change is ready.
 - Rails Omakase with RSpec, FactoryBot, and ViewComponent RuboCop plugins
 - Custom cops for inline classes, direct instance-variable reads, and boolean
   database columns
-- RubyCritic with a 95/100 minimum score
+- RubyCritic with a 95/100 aggregate minimum score and a changed-code
+  complexity gate
 
 ### Safety and CI
 
@@ -104,6 +105,19 @@ Run the complete quality and safety suite inside the generated application:
 ```bash
 bin/ci
 ```
+
+For the incremental maintainability check, compare changed application and
+library Ruby files with the branch base:
+
+```bash
+bin/rubycritic
+bin/rubycritic-changed <base-ref>
+```
+
+The changed-code gate blocks `HighComplexity` and `TooManyStatements` findings
+at 10 or more statements. Generated applications include `AGENTS.md` and
+`docs/guides/testing.md` with the complete quality workflow and Definition of
+Done.
 
 Generated gem and DSL RBIs are specific to the application and should be
 committed.

@@ -7,6 +7,8 @@ CI.run do
   step "Style: Ruby", "bin/rubocop"
   step "Types: Sorbet", "bundle exec srb tc"
   step "Quality: RubyCritic", "bin/rubycritic"
+  step "Quality: Changed RubyCritic",
+    'bin/rubycritic-changed "${RUBYCRITIC_BASE:-$(git hash-object -t tree /dev/null)}"'
 
   step "Security: Gem audit", "bin/bundler-audit"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
