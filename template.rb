@@ -5,7 +5,7 @@ require "fileutils"
 SOURCE_ROOT = File.expand_path("files", __dir__)
 ASSET_BASE_URL = ENV.fetch(
   "RAILS_TEMPLATE_ASSET_BASE_URL",
-  "https://raw.githubusercontent.com/dgalarza/rails-template/main/files"
+  "https://raw.githubusercontent.com/Praxis-Works/Railbed/main/files"
 )
 source_paths.unshift(SOURCE_ROOT) if Dir.exist?(SOURCE_ROOT)
 

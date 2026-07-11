@@ -1,23 +1,79 @@
-# Rails Template
+# Railbed
 
-An opinionated Rails 8.1 application template extracted from the quality, testing, typing, and CI conventions developed in WareSpaceRails.
+**An opinionated, agent-ready foundation for production Rails applications.**
+
+Start your Rails application on solid ground. Railbed turns a new Rails 8.1
+application into a production-minded starting point with testing, typing,
+security checks, dependency policy, and CI already in place.
+
+It gives developers and coding agents the same explicit conventions and the
+same fast feedback loop. It does not generate application features or hide
+Rails behind another framework.
+
+An open-source project from Praxis.
+
+## Why Railbed
+
+A fresh Rails application is intentionally flexible. That is useful, but it
+also leaves every team to make the same early decisions about tests, types,
+code quality, database safety, and CI.
+
+Railbed makes those decisions once and encodes them in the repository. The
+result is a codebase with fewer ambiguous choices, enforceable boundaries, and
+one command that tells a developer or coding agent whether a change is ready.
 
 ## What it installs
 
-- PostgreSQL, Tailwind, importmap, Solid Queue/Cache/Cable, ViewComponent, `fx`, and timestamp-backed booleans
-- RSpec, FactoryBot, Shoulda Matchers, SimpleCov, WebMock, Capybara, and Selenium
-- Bullet N+1 enforcement and Strong Migrations
-- Rails Omakase plus RSpec, FactoryBot, and ViewComponent RuboCop plugins
-- Custom cops for inline classes, direct instance-variable reads, and boolean database columns
+### Rails foundation
+
+- PostgreSQL with `structure.sql`
+- Tailwind CSS, importmap, Turbo, and Stimulus
+- Solid Queue, Solid Cache, and Solid Cable
+- ViewComponent
+- `fx` for database functions and views
+- Timestamp-backed booleans
+
+### Tests and feedback
+
+- RSpec and FactoryBot
+- Shoulda Matchers
+- SimpleCov
+- WebMock
+- Capybara and Selenium
+- Bullet N+1 detection, configured to fail in test
+
+### Types and code quality
+
+- Sorbet strict mode
+- Tapioca gem and DSL RBI generation
+- Rails Omakase with RSpec, FactoryBot, and ViewComponent RuboCop plugins
+- Custom cops for inline classes, direct instance-variable reads, and boolean
+  database columns
 - RubyCritic with a 95/100 minimum score
-- Sorbet strict mode and generated Tapioca gem/DSL RBIs
-- Brakeman, Bundler Audit, bounded dependency policy, local `bin/ci`, and GitHub Actions
 
-The template targets Ruby 4.0.5 and Rails 8.1.3. Generated applications use `structure.sql`.
+### Safety and CI
 
-## Usage
+- Strong Migrations
+- Brakeman
+- Bundler Audit
+- A bounded dependency policy
+- A local `bin/ci` entry point
+- GitHub Actions using the same CI configuration
 
-From this repository:
+## Requirements
+
+Railbed currently targets:
+
+- Ruby 4.0.5
+- Rails 8.1.3
+- PostgreSQL
+
+The examples use [mise](https://mise.jdx.dev/) to select the expected Ruby
+version, but mise is not required.
+
+## Create an application
+
+From a local clone of Railbed:
 
 ```bash
 mise exec ruby@4.0.5 -- rails new my_app \
@@ -26,35 +82,49 @@ mise exec ruby@4.0.5 -- rails new my_app \
   --template="$(pwd)/template.rb"
 ```
 
-From GitHub after this repository is published:
+From GitHub:
 
 ```bash
 mise exec ruby@4.0.5 -- rails new my_app \
   --database=postgresql \
   --css=tailwind \
-  --template=https://raw.githubusercontent.com/dgalarza/rails-template/main/template.rb
+  --template=https://raw.githubusercontent.com/Praxis-Works/Railbed/main/template.rb
 ```
 
-The template reads local assets when cloned and fetches them from the repository's raw `main` URL when invoked remotely. Override the remote asset location with `RAILS_TEMPLATE_ASSET_BASE_URL` when testing a fork or branch.
+Railbed reads its supporting files from the local clone when available and
+fetches them from the repository's raw `main` URL when invoked remotely. Set
+`RAILS_TEMPLATE_ASSET_BASE_URL` to test assets from a fork or branch.
 
-## Verify the template
+## Verify your generated application
 
-Fast structural checks:
-
-```bash
-bin/test
-```
-
-End-to-end generation into a temporary directory:
-
-```bash
-INTEGRATION=1 bin/test
-```
-
-Inside a generated application, run:
+Run the complete quality and safety suite inside the generated application:
 
 ```bash
 bin/ci
 ```
 
-Generated gem and DSL RBIs are application-specific and should be committed with the application.
+Generated gem and DSL RBIs are specific to the application and should be
+committed.
+
+## Develop Railbed
+
+Run the fast structural checks:
+
+```bash
+bin/test
+```
+
+Run an end-to-end generation test in a temporary directory:
+
+```bash
+INTEGRATION=1 bin/test
+```
+
+## Philosophy
+
+Railbed is opinionated by design. Its defaults favor explicitness, fast
+feedback, and production safety over maximum flexibility.
+
+Use the pieces that fit your application. Change them when your constraints
+demand it. Keep the reasoning visible so the next developer—or coding
+agent—does not have to guess.
