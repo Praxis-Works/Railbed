@@ -16,6 +16,12 @@ if [[ "${INTEGRATION:-0}" == "1" ]]; then
     --template="$(pwd)/template.rb"
 
   cd "$tmpdir/generated_app"
+  for skill in conventional-comments conventional-commits tdd-workflow team-code-review; do
+    test -L ".claude/skills/$skill"
+    test "$(readlink ".claude/skills/$skill")" = "../../.agents/skills/$skill"
+    test -f ".claude/skills/$skill/SKILL.md"
+  done
+
   mise exec ruby@4.0.5 -- bin/dependency-policy
   mise exec ruby@4.0.5 -- bundle exec rspec
   mise exec ruby@4.0.5 -- bundle exec srb tc

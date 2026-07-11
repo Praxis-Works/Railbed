@@ -59,6 +59,8 @@ one command that tells a developer or coding agent whether a change is ready.
 - A bounded dependency policy
 - A local `bin/ci` entry point
 - GitHub Actions using the same CI configuration
+- Repo-scoped agent skills for TDD, Conventional Commits, Conventional Comments,
+  and Rails-aware team code review, shared with Codex and Claude Code
 
 ## Requirements
 
@@ -105,6 +107,23 @@ bin/ci
 
 Generated gem and DSL RBIs are specific to the application and should be
 committed.
+
+## Agent skills
+
+Generated applications keep the canonical repo-scoped skills under
+`.agents/skills` for Codex and create per-skill symlinks under `.claude/skills`
+for Claude Code. The `tdd-workflow`, `conventional-commits`, and
+`conventional-comments` skills are tracked in `skills-lock.json` and can be
+refreshed from their upstream repositories with:
+
+```bash
+DISABLE_TELEMETRY=1 npx skills update --project --yes
+```
+
+Review skill updates before committing them. The `team-code-review` skill is
+maintained by Railbed rather than the lockfile because it is tailored to the
+generated Rails stack, including RSpec, Sorbet/Tapioca, Strong Migrations,
+`schema.rb`, ViewComponent, Solid Queue, Bullet, Brakeman, and `bin/ci`.
 
 ## Develop Railbed
 

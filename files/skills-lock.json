@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "conventional-comments": {
+      "source": "dgalarza/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/conventional-comments/SKILL.md",
+      "computedHash": "d4162f9aef6da44d9b88154ab951f407e9d5e7be285bf8f682b69629c0819bb2"
+    },
+    "conventional-commits": {
+      "source": "dgalarza/claude-code-workflows",
+      "sourceType": "github",
+      "skillPath": "plugins/conventional-commits/skills/conventional-commits/SKILL.md",
+      "computedHash": "9933c4ed8509de60bb0554305d9cda44cc2c35f39f2f1c5d79a8e7b551c402fa"
+    },
+    "tdd-workflow": {
+      "source": "dgalarza/claude-code-workflows",
+      "sourceType": "github",
+      "skillPath": "plugins/tdd-workflow/skills/tdd-workflow/SKILL.md",
+      "computedHash": "e094ab7c7cf89e61ff30e63b1a26f5ec6de28030c4f39764dbfbcb0dff8d5319"
+    }
+  }
+}
