@@ -12,6 +12,8 @@ jobs:
       RUBOCOP_CACHE_ROOT: tmp/rubocop
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
@@ -23,6 +25,10 @@ jobs:
         run: bundle exec srb tc
       - name: Enforce maintainability score
         run: bin/rubycritic
+      - name: Reject newly changed complex Ruby methods
+        env:
+          RUBYCRITIC_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: bin/rubycritic-changed "$RUBYCRITIC_BASE"
       - name: Audit gems
         run: bin/bundler-audit
       - name: Audit importmap dependencies

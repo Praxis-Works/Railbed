@@ -22,8 +22,15 @@ if [[ "${INTEGRATION:-0}" == "1" ]]; then
     test -f ".claude/skills/$skill/SKILL.md"
   done
 
+  git init --quiet
+  empty_tree="$(git hash-object -t tree /dev/null)"
   mise exec ruby@4.0.5 -- bin/dependency-policy
   mise exec ruby@4.0.5 -- bundle exec rspec
   mise exec ruby@4.0.5 -- bundle exec srb tc
   mise exec ruby@4.0.5 -- bin/rubocop
+  mise exec ruby@4.0.5 -- bin/rubycritic
+  mise exec ruby@4.0.5 -- bin/rubycritic-changed "$empty_tree"
+  mise exec ruby@4.0.5 -- bin/bundler-audit
+  mise exec ruby@4.0.5 -- bin/importmap audit
+  mise exec ruby@4.0.5 -- bin/brakeman --no-pager
 fi

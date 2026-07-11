@@ -68,6 +68,7 @@ Rails:
 
 RSpec/DescribeClass:
   Exclude:
+    - "spec/bin/**/*_spec.rb"
     - "spec/config/**/*_spec.rb"
 
 RSpec/DiscardedMatcher:
