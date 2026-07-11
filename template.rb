@@ -9,6 +9,13 @@ ASSET_BASE_URL = ENV.fetch(
 )
 source_paths.unshift(SOURCE_ROOT) if Dir.exist?(SOURCE_ROOT)
 
+AGENT_SKILLS = %w[
+  conventional-comments
+  conventional-commits
+  tdd-workflow
+  team-code-review
+].freeze
+
 def copy_template_file(path, destination = path)
   if Dir.exist?(SOURCE_ROOT)
     copy_file path, destination, force: true
@@ -27,6 +34,11 @@ copy_template_file ".rspec"
 copy_template_file ".reek.yml"
 copy_template_file ".rubocop.yml"
 copy_template_file ".rubycritic.yml"
+copy_template_file ".agents/skills/conventional-comments/SKILL.md"
+copy_template_file ".agents/skills/conventional-commits/SKILL.md"
+copy_template_file ".agents/skills/conventional-commits/references/commit-examples.md"
+copy_template_file ".agents/skills/tdd-workflow/SKILL.md"
+copy_template_file ".agents/skills/team-code-review/SKILL.md"
 copy_template_file ".github/workflows/ci.yml"
 copy_template_file "bin/dependency-policy"
 copy_template_file "bin/rubycritic"
@@ -48,6 +60,12 @@ copy_template_file "spec/rubocop/cop/quality/prefer_bareword_readers_spec.rb"
 copy_template_file "spec/rubocop/cop/quality/time_for_a_boolean_spec.rb"
 copy_template_file "spec/spec_helper.rb"
 copy_template_file "spec/rails_helper.rb"
+copy_template_file "skills-lock.json"
+
+empty_directory ".claude/skills"
+AGENT_SKILLS.each do |skill|
+  create_link ".claude/skills/#{skill}", "../../.agents/skills/#{skill}"
+end
 
 create_file ".gitignore" unless File.exist?(".gitignore")
 append_to_file ".gitignore", "\n/vendor/bundle\n/coverage\n"

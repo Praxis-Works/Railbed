@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "minitest/autorun"
+require "json"
 require "open3"
 require "pathname"
 require "yaml"
@@ -49,5 +50,50 @@ class TemplateTest < Minitest::Test
     unbounded = gemfile.lines.grep(/^\s*gem /).reject { |line| line.match?(/gem \"[^\"]+\", \"(?:~>|<|<=|=)/) }
 
     assert_empty unbounded, "Unbounded gems:\n#{unbounded.join}"
+  end
+
+  def test_repo_scoped_skills_have_required_frontmatter
+    skill_files = ROOT.join("files/.agents/skills").glob("*/SKILL.md")
+
+    assert_equal 4, skill_files.size
+
+    skill_files.each do |path|
+      contents = path.read
+      assert_match(/\A---\n/, contents, "Missing frontmatter: #{path}")
+      assert_match(/^name: [a-z0-9-]+$/, contents, "Missing skill name: #{path}")
+      assert_match(/^description: .+$/, contents, "Missing skill description: #{path}")
+    end
+  end
+
+  def test_template_links_repo_skills_for_claude_code
+    template = ROOT.join("template.rb").read
+
+    assert_includes template, 'empty_directory ".claude/skills"'
+    assert_includes template, 'create_link ".claude/skills/#{skill}", "../../.agents/skills/#{skill}"'
+  end
+
+  def test_lockfile_tracks_only_upstream_managed_skills
+    lockfile = JSON.parse(ROOT.join("files/skills-lock.json").read)
+
+    assert_equal 1, lockfile.fetch("version")
+    assert_equal %w[conventional-comments conventional-commits tdd-workflow], lockfile.fetch("skills").keys.sort
+    refute_includes lockfile.fetch("skills"), "team-code-review"
+  end
+
+  def test_team_code_review_is_tailored_to_generated_rails_stack
+    review_skill = ROOT.join("files/.agents/skills/team-code-review/SKILL.md").read
+
+    [
+      "bin/ci",
+      "RSpec",
+      "Sorbet",
+      "Tapioca",
+      "ViewComponent",
+      "schema.rb",
+      "composition over inheritance",
+      "POODR"
+    ].each do |term|
+      assert_includes review_skill, term
+    end
   end
 end
