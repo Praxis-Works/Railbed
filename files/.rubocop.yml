@@ -1,0 +1,109 @@
+# Omakase Ruby styling for Rails
+plugins:
+  - rubocop-factory_bot
+  - rubocop-rspec
+  - rubocop-view_component
+
+require:
+  - ./lib/rubocop/cop/quality/no_inline_class
+  - ./lib/rubocop/cop/quality/prefer_bareword_readers
+  - ./lib/rubocop/cop/quality/time_for_a_boolean
+
+inherit_gem: { rubocop-rails-omakase: rubocop.yml }
+
+AllCops:
+  NewCops: disable
+
+Bundler:
+  Enabled: true
+
+Bundler/GemVersion:
+  Enabled: true
+  EnforcedStyle: required
+
+Bundler/OrderedGems:
+  Enabled: true
+  TreatCommentsAsGroupSeparators: false
+
+FactoryBot/AssociationStyle:
+  Enabled: true
+
+FactoryBot/ConsistentParenthesesStyle:
+  Enabled: true
+
+FactoryBot/ExcessiveCreateList:
+  Enabled: true
+
+FactoryBot/FactoryAssociationWithStrategy:
+  Enabled: true
+
+FactoryBot/FactoryNameStyle:
+  Enabled: true
+
+FactoryBot/IdSequence:
+  Enabled: true
+
+FactoryBot/RedundantFactoryOption:
+  Enabled: true
+
+FactoryBot/SyntaxMethods:
+  Enabled: true
+
+Layout/ClassStructure:
+  Enabled: true
+
+Naming/AccessorMethodName:
+  Enabled: true
+
+Naming/BlockParameterName:
+  Enabled: true
+
+Performance:
+  Enabled: true
+  Exclude:
+    - "test/**/*"
+
+Rails:
+  Enabled: true
+
+RSpec/DescribeClass:
+  Exclude:
+    - "spec/config/**/*_spec.rb"
+
+RSpec/DiscardedMatcher:
+  Enabled: true
+
+RSpec/IncludeExamples:
+  Enabled: true
+
+RSpec/LeakyLocalVariable:
+  Enabled: true
+
+RSpec/MatchWithSimpleRegex:
+  Enabled: true
+
+RSpec/Output:
+  Enabled: true
+
+RSpec/SpecFilePathFormat:
+  CustomTransform:
+    RSpec: rspec
+    RuboCop: rubocop
+    Quality: quality
+
+Style/AccessModifierDeclarations:
+  Enabled: true
+
+Style/ClassAndModuleChildren:
+  Enabled: true
+
+Quality/NoInlineClass:
+  Enabled: true
+
+Quality/PreferBarewordReaders:
+  Enabled: true
+
+Quality/TimeForABoolean:
+  Enabled: true
+  Include:
+    - "db/migrate/**/*.rb"

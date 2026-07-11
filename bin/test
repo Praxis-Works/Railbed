@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+ruby -Itest test/template_test.rb
+
+if [[ "${INTEGRATION:-0}" == "1" ]]; then
+  tmpdir="$(mktemp -d)"
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  mise exec ruby@4.0.5 -- rails new "$tmpdir/generated_app" \
+    --database=postgresql \
+    --css=tailwind \
+    --skip-git \
+    --template="$(pwd)/template.rb"
+
+  cd "$tmpdir/generated_app"
+  mise exec ruby@4.0.5 -- bin/dependency-policy
+  mise exec ruby@4.0.5 -- bundle exec rspec
+  mise exec ruby@4.0.5 -- bundle exec srb tc
+  mise exec ruby@4.0.5 -- bin/rubocop
+fi

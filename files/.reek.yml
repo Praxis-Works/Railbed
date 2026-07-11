@@ -1,0 +1,25 @@
+---
+detectors:
+  IrresponsibleModule:
+    exclude:
+      - ApplicationController
+      - ApplicationHelper
+      - ApplicationJob
+      - ApplicationMailer
+      - ApplicationRecord
+
+directories:
+  "app/controllers":
+    InstanceVariableAssumption:
+      enabled: false
+    UnusedPrivateMethod:
+      enabled: false
+  "app/helpers":
+    UtilityFunction:
+      enabled: false
+  "app/mailers":
+    InstanceVariableAssumption:
+      enabled: false
+  "app/models":
+    InstanceVariableAssumption:
+      enabled: false

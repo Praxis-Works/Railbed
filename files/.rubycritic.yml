@@ -1,0 +1,8 @@
+---
+paths:
+  - app
+  - lib
+formats:
+  - console
+minimum_score: 95
+no_browser: true

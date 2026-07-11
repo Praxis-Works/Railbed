@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+require "rubygems"
+require "bundler/setup"
+
+Dir.chdir(File.expand_path("..", __dir__)) do
+  load Gem.bin_path("rubycritic", "rubycritic")
+end

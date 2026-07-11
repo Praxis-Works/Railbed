@@ -1,0 +1,37 @@
+#!/usr/bin/env ruby
+
+ENV["BUNDLE_FROZEN"] = "true"
+
+require "bundler"
+
+errors = []
+definition = Bundler::Definition.build(Bundler.default_gemfile, Bundler.default_lockfile, nil)
+
+begin
+  definition.ensure_equivalent_gemfile_and_lockfile
+rescue Bundler::BundlerError => error
+  errors << "Gemfile.lock is not fresh:\n#{error.message}"
+end
+
+definition.dependencies.each do |dependency|
+  source = dependency.source
+
+  if source.is_a?(Bundler::Source::Git)
+    ref = source.options["ref"]
+    errors << "#{dependency.name}: git dependencies must use a full commit SHA via ref:" unless ref&.match?(/\A(?:[0-9a-f]{40}|[0-9a-f]{64})\z/i)
+    next
+  end
+
+  next if source.is_a?(Bundler::Source::Path)
+
+  requirements = dependency.requirement.requirements
+  has_upper_bound = requirements.any? { |operator, _version| %w[~> < <= =].include?(operator) }
+  errors << "#{dependency.name}: registry dependencies must have a bounded version requirement (for example, ~> 2.0)" unless has_upper_bound
+end
+
+if errors.empty?
+  puts "Dependency policy passed"
+else
+  warn errors.join("\n\n")
+  exit 1
+end
