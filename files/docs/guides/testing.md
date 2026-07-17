@@ -26,3 +26,7 @@ Run `bin/rubycritic-changed <base-ref>` against the branch or pull-request base 
 Shorter statement-count findings and other smells remain advisory and visible in RubyCritic's focused report. Keep short explicit mappings readable; do not introduce metaprogramming solely to satisfy a metric.
 
 CI fetches complete Git history and compares against the pull-request base SHA or the previous push SHA. On a repository's initial push, GitHub's null previous SHA is normalized to Git's empty tree so the first quality run analyzes all application and library Ruby files.
+
+## RuboCop scope
+
+`Quality/PreferBarewordReaders` remains enforced for application and domain Ruby, but excludes controllers, mailers, and views. Instance variables are conventional Rails presentation state in those framework-facing layers. This is deliberate cop scope, not a legacy todo-baseline exclusion.

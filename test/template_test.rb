@@ -25,6 +25,21 @@ class TemplateTest < Minitest::Test
     end
   end
 
+  def test_rubocop_presentation_scope_keeps_bareword_readers_enabled
+    config = YAML.safe_load_file(ROOT.join("files/.rubocop.yml"), aliases: true)
+    cop_config = config.fetch("Quality/PreferBarewordReaders")
+
+    assert_equal true, cop_config.fetch("Enabled")
+    assert_equal %w[app/controllers/**/* app/mailers/**/* app/views/**/*], cop_config.fetch("Exclude")
+  end
+
+  def test_template_delivers_rubocop_presentation_scope_spec
+    path = "spec/config/rubocop_scope_spec.rb"
+
+    assert_includes ROOT.join("template.rb").read, %(copy_template_file "#{path}")
+    assert ROOT.join("files", path).file?, "Missing template asset: #{path}"
+  end
+
   def test_template_assets_exist
     template = ROOT.join("template.rb").read
     copied_paths = template.scan(/copy_template_file \"([^\"]+)\"/).flatten
