@@ -103,6 +103,10 @@ Quality/NoInlineClass:
 
 Quality/PreferBarewordReaders:
   Enabled: true
+  Exclude:
+    - "app/controllers/**/*"
+    - "app/mailers/**/*"
+    - "app/views/**/*"
 
 Quality/TimeForABoolean:
   Enabled: true
